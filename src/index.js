@@ -176,7 +176,7 @@ class Game extends React.Component {
         this.winner = winner;
         let status;
         if (winner !== null) {
-            status = `The winner is ${winner}`;
+            status = `The winner is ${winner}!`;
         } else {
             status = `Next goes to ${this.state.xIsNext === true ? "X" : "O"}`;
         }
