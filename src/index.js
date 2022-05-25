@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import classNames from "classnames";
 import "./index.css";
 
 /* 函数组件，接收一个props，返回jsx */
@@ -13,64 +14,67 @@ function Square(props) {
 
 // 判断获胜方
 function judgeWinner(board) {
-    /* 判断是否有胜者，分别从三行三列以及两条交叉线判断 */
-    const lines = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6],
-    ];
+    /* 判断是否有胜方 */
+    for (let i = 0; i < 3; i++) {
+        /* 判断三行 */
+        if (
+            board[i][0] !== null &&
+            board[i][0] === board[i][1] &&
+            board[i][1] === board[i][2]
+        ) {
+            return board[i][0];
+        }
 
-    for (const [i, j, k] of lines) {
-        if (board[i] !== null) {
-            if (board[i] === board[j] && board[j] === board[k]) {
-                return board[i];
-            }
+        /* 判断三列 */
+        if (
+            board[0][i] !== null &&
+            board[0][i] === board[1][i] &&
+            board[1][i] === board[2][i]
+        ) {
+            return board[0][i];
         }
     }
+
+    /* 判断两条交叉线 */
+    if (board[1][1]) {
+        if (board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
+            return board[1][1];
+        }
+
+        if (board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
+            return board[1][1];
+        }
+    }
+
     return null;
 }
 
 /* 棋盘类 */
 class Board extends React.Component {
-    /* 调用函数组件 */
+    /* 调用函数组件Square */
     /* 代表事件监听的prop命名为on[Event] */
     /* 处理的监听方法命名为handle[Event] */
-    renderSquare(i) {
-        return (
-            <Square
-                value={this.props.board[i]}
-                onClick={() => {
-                    this.props.onClick(i);
-                }}
-            />
-        );
-    }
-
     render() {
-        return (
-            <div className="board">
-                <div className="board-row">
-                    {this.renderSquare(0)}
-                    {this.renderSquare(1)}
-                    {this.renderSquare(2)}
+        /* map遍历得到所有行 */
+        const rows = this.props.board.map((row, xIndex) => {
+            /* map遍历得到一行中的所有格子 */
+            const cells = row.map((value, yIndex) => (
+                <Square
+                    value={value}
+                    key={yIndex}
+                    onClick={() => {
+                        this.props.onClick(xIndex, yIndex);
+                    }}
+                />
+            ));
+
+            return (
+                <div className="board-row" key={xIndex}>
+                    {cells}
                 </div>
-                <div className="board-row">
-                    {this.renderSquare(3)}
-                    {this.renderSquare(4)}
-                    {this.renderSquare(5)}
-                </div>
-                <div className="board-row">
-                    {this.renderSquare(6)}
-                    {this.renderSquare(7)}
-                    {this.renderSquare(8)}
-                </div>
-            </div>
-        );
+            );
+        });
+        return <div className="board">{rows}</div>;
     }
 }
 
@@ -80,25 +84,33 @@ class Game extends React.Component {
         super(props);
 
         this.state = {
-            histories: [{ squares: new Array(9).fill(null) }],
+            histories: [
+                {
+                    squares: new Array(3)
+                        .fill(0)
+                        .map((row) => new Array(3).fill(null)),
+                },
+            ],
             curHistoryIndex: 0,
             xIsNext: true,
         };
 
+        /* 全局维护获胜者，反正每次重新渲染都会算一遍 */
         this.winner = null;
         this.handleClick = this.handleClick.bind(this);
         this.timeTravel = this.timeTravel.bind(this);
     }
 
     /* 落子的方法 */
-    handleClick(i) {
-        const squares = [
-            ...this.state.histories[this.state.curHistoryIndex].squares,
-        ];
+    handleClick(xIndex, yIndex) {
+        const formerSquares =
+            this.state.histories[this.state.curHistoryIndex].squares;
+        /* 二维数组要深克隆一下 */
+        const squares = formerSquares.map((row) => [...row]);
         /* 只有当没人获胜并且格子为空的情况下能落子 */
-        if (this.winner === null && squares[i] === null) {
+        if (this.winner === null && squares[xIndex][yIndex] === null) {
             /* 更新棋盘 */
-            squares[i] = this.state.xIsNext === true ? "X" : "O";
+            squares[xIndex][yIndex] = this.state.xIsNext === true ? "X" : "O";
             /* 保证后面多余的历史删掉 */
             const histories = this.state.histories.slice(
                 0,
@@ -106,7 +118,11 @@ class Game extends React.Component {
             );
             /* 使用concat会返回一个新数组，明确修改不可变数据 */
             this.setState({
-                histories: histories.concat({ squares: squares }),
+                histories: histories.concat({
+                    squares: squares,
+                    xIndex,
+                    yIndex,
+                }),
                 curHistoryIndex: this.state.curHistoryIndex + 1,
                 xIsNext: !this.state.xIsNext,
             });
@@ -131,15 +147,26 @@ class Game extends React.Component {
         /* 得到所有按钮 */
         const gotoBtns = this.state.histories.map((move, index) => {
             const description =
-                index === 0 ? "Go to the Begining" : `Go to move No.${index}`;
+                index === 0 ? "The very Begining" : `Go to move No.${index}`;
+            const cordinates =
+                index === 0 ? "" : `\n(${move.xIndex}, ${move.yIndex})`;
+            const selected =
+                index === 0
+                    ? ""
+                    : `\n${move.squares[move.xIndex][move.yIndex]}`;
+            const btnClass = classNames("history", {
+                "cur-btn": index === this.state.curHistoryIndex,
+            });
             return (
                 <li key={index}>
                     <button
-                        className="history"
+                        className={btnClass}
                         onClick={() => this.timeTravel(index)}
                     >
                         {description}
                     </button>
+                    {cordinates}
+                    <span className="selected">{selected}</span>
                 </li>
             );
         });

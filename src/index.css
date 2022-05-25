@@ -5,15 +5,22 @@
     font-family: "Courier New", Courier, monospace;
 }
 
+.root {
+    width: 100%;
+}
+
 .game {
-    margin: 40px 0;
+    width: 80%;
     max-width: 800px;
+    margin-top: 40px;
+    margin-left: 50%;
+    transform: translateX(-50%);
     display: flex;
     justify-content: center;
 }
 
-.status {
-    margin-bottom: 16px;
+.game-board {
+    width: 240px;
 }
 
 .board-row {
@@ -37,13 +44,31 @@
 
 /* HISTORIES */
 .game-info {
-    width: 180px;
-    margin-left: 40px;
+    width: 240px;
 }
+
+.game-info .status {
+    margin-bottom: 16px;
+}
+
 .game-info .histories {
+    margin-left: 10px;
     margin-top: 30px;
 }
 
 .histories .history {
     margin-bottom: 10px;
+    border-radius: 5px;
+    padding: 3px 5px;
+    border: 2px solid #999;
+}
+
+.histories .selected {
+    font-weight: 700;
+}
+
+.cur-btn {
+    border: 2px solid #999;
+    color: #eee;
+    background: #999;
 }
