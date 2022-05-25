@@ -1,13 +1,49 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Courier New", Courier, monospace;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.game {
+    margin: 40px 0;
+    max-width: 800px;
+    display: flex;
+    justify-content: center;
+}
+
+.status {
+    margin-bottom: 16px;
+}
+
+.board-row {
+    display: flow-root;
+}
+
+/* 每个格子,通过重叠1px来防止中间border看起来更厚 */
+.board-row .square {
+    width: 50px;
+    height: 50px;
+    float: left;
+    border: 1px solid #999;
+    background: #fff;
+    margin-right: -1px;
+    margin-top: -1px;
+    line-height: 34px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* HISTORIES */
+.game-info {
+    width: 180px;
+    margin-left: 40px;
+}
+.game-info .histories {
+    margin-top: 30px;
+}
+
+.histories .history {
+    margin-bottom: 10px;
 }
